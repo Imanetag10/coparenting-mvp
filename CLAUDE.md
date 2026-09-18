@@ -17,7 +17,8 @@ current browser's `localStorage`, per viewer.
 
 1. **Shared custody calendar** — alternating weekly custody (Léa / Karim) shown as a colored month
    grid, a "this week" banner naming who has the child, and a list of upcoming handoff days with a
-   "request a swap" action (flags the day, no real notification).
+   "request a swap" action (flags the day, no real notification). The handoff always falls on a
+   Monday (`isHandoffDay(day)`), so custody alternates weekly with a fixed, periodic exchange day.
 2. **Child's journal** — timestamped entries logged by whichever parent had the child that day:
    meal, sleep, health, mood, event. Filterable by type, with an entry counter and an "add entry"
    bottom sheet.
@@ -40,7 +41,8 @@ authorship, journal entry authorship, and read-status logic. There is no real au
 - [duo.html](duo.html) — the entire app: inline `<style>`, inline `<script>` (IIFE), no build step,
   no dependencies. Open directly in a browser.
   - Mock data: `MOCK_JOURNAL`, `MOCK_MESSAGES`, `MOCK_HEALTH` and `assignedParent(day)` (weekly
-    alternation logic) near the top of the script.
+    alternation logic) near the top of the script. `isHandoffDay(day)` pins the exchange to Monday;
+    `nextSwitchDays()` only ever returns Mondays.
   - State: a single `store` object (`{ swaps, journal, messages, health, parent }`) persisted to
     `localStorage` under the key `duo-coparent-mvp` via `loadStore()`/`saveStore()`. Falls back to
     the mock data on first load.

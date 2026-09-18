@@ -519,15 +519,18 @@
   var DAYS_IN_MONTH = 30;
   var TODAY = 18;
 
+  function weekdayOf(day){ return (day - 1 + MONTH_START_WEEKDAY) % 7; } // 0=Mon .. 6=Dim
+  function isHandoffDay(day){ return weekdayOf(day) === 0; } // passage de garde chaque lundi
+
   function assignedParent(day){
-    // alternating weekly custody, switch handled on the Sunday->Monday boundary
+    // garde alternée à la semaine, le passage a toujours lieu le lundi
     var week = Math.floor((day - 1 + MONTH_START_WEEKDAY) / 7);
     return week % 2 === 0 ? "a" : "b";
   }
   function nextSwitchDays(){
     var out = [];
     for (var d = TODAY; d <= DAYS_IN_MONTH; d++){
-      if (d > TODAY && assignedParent(d) !== assignedParent(d-1)) out.push(d);
+      if (d > TODAY && isHandoffDay(d)) out.push(d);
       if (out.length >= 2) break;
     }
     return out;
@@ -585,7 +588,7 @@
         '<div class="handoff">' +
           '<div class="date-chip"><span class="num">' + d + '</span><span class="mon">' + months[8] + '</span></div>' +
           '<div class="info"><div class="who">' + PARENTS[from].name + ' → ' + PARENTS[to].name + '</div>' +
-          '<div class="meta">Passage de garde prévu</div></div>' +
+          '<div class="meta">Passage de garde prévu · Lundi</div></div>' +
           '<button class="pill-btn' + (sent ? " sent" : "") + '">' + (sent ? "Demande envoyée" : "Demander un échange") + '</button>' +
         '</div>'
       );
