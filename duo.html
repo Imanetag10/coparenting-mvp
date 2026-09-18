@@ -1,0 +1,856 @@
+<title>Duo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EFF3F4;
+    --frame:#E3E9EB;
+    --surface:#FFFFFF;
+    --surface-2:#F5F7F8;
+    --ink:#17262A;
+    --muted:#5C7278;
+    --line:#DCE4E6;
+    --teal:#1C7C74;
+    --teal-soft:#DCEEEC;
+    --amber:#C9791E;
+    --amber-soft:#F6E6D2;
+    --danger:#C24545;
+    --radius:18px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#12181A;
+      --frame:#0E1314;
+      --surface:#1B2426;
+      --surface-2:#212B2D;
+      --ink:#EAF0F1;
+      --muted:#8FA3A8;
+      --line:#2B3739;
+      --teal:#57BDB3;
+      --teal-soft:#1F3634;
+      --amber:#E3A05B;
+      --amber-soft:#3A2E1E;
+      --danger:#E27C7C;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#12181A;
+    --frame:#0E1314;
+    --surface:#1B2426;
+    --surface-2:#212B2D;
+    --ink:#EAF0F1;
+    --muted:#8FA3A8;
+    --line:#2B3739;
+    --teal:#57BDB3;
+    --teal-soft:#1F3634;
+    --amber:#E3A05B;
+    --amber-soft:#3A2E1E;
+    --danger:#E27C7C;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Plus Jakarta Sans", -apple-system, sans-serif;
+    display:flex;
+    justify-content:center;
+    padding-block:24px;
+  }
+  h1,h2,h3{font-family:"Fraunces", Georgia, serif; margin:0; text-wrap:balance;}
+
+  .phone{
+    width:100%;
+    max-width:420px;
+    background:var(--frame);
+    border-radius:34px;
+    padding:10px;
+    box-shadow:0 30px 60px -20px rgba(15,30,32,.25), 0 0 0 1px var(--line);
+  }
+  .screen{
+    background:var(--surface);
+    border-radius:26px;
+    height:min(820px, calc(100vh - 90px));
+    min-height:560px;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    position:relative;
+  }
+
+  header.topbar{
+    padding:calc(18px + env(safe-area-inset-top,0px)) 20px 14px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-shrink:0;
+  }
+  .brand{display:flex; align-items:center; gap:9px;}
+  .brand .mark{
+    width:30px;height:30px;border-radius:9px;
+    background:linear-gradient(135deg, var(--teal), var(--amber));
+    flex-shrink:0;
+  }
+  .brand h1{font-size:19px; font-weight:700; letter-spacing:-.01em;}
+  .switcher{
+    display:flex; background:var(--surface-2); border-radius:999px; padding:3px; gap:2px;
+    border:1px solid var(--line);
+  }
+  .switcher button{
+    border:none; background:none; font:inherit; font-size:12px; font-weight:700;
+    padding:6px 11px; border-radius:999px; cursor:pointer; color:var(--muted);
+    font-family:"Plus Jakarta Sans", sans-serif;
+    transition:background .15s, color .15s;
+  }
+  .switcher button.active.a{background:var(--teal); color:#fff;}
+  .switcher button.active.b{background:var(--amber); color:#fff;}
+
+  main{flex:1; overflow-y:auto; padding:18px 20px 26px;}
+  main::-webkit-scrollbar{width:0;}
+
+  .eyebrow{font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:6px;}
+  .section-head{display:flex; align-items:baseline; justify-content:space-between; margin:22px 0 12px;}
+  .section-head:first-child{margin-top:0;}
+  .section-head h2{font-size:17px; font-weight:600;}
+  .link-btn{border:none; background:none; font-family:inherit; font-size:12.5px; font-weight:700; color:var(--teal); cursor:pointer; padding:0;}
+
+  /* --- Calendar --- */
+  .cal-card{background:var(--surface-2); border-radius:var(--radius); padding:16px; border:1px solid var(--line);}
+  .cal-title{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;}
+  .cal-title strong{font-family:"Fraunces", serif; font-size:16px; font-weight:600;}
+  .legend{display:flex; gap:12px; font-size:11px; color:var(--muted); font-weight:600; flex-wrap:wrap;}
+  .legend span{display:inline-flex; align-items:center; gap:5px;}
+  .dot{width:8px; height:8px; border-radius:50%; display:inline-block; flex-shrink:0;}
+  .dot.a{background:var(--teal);} .dot.b{background:var(--amber);} .dot.swap{background:var(--danger);}
+  .week-banner{
+    display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--line);
+    border-radius:12px; padding:9px 13px; margin-bottom:14px; font-size:12.5px; font-weight:700;
+  }
+  .week-banner .dot{width:9px; height:9px;}
+  .weekdays, .grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px; text-align:center;}
+  .weekdays div{font-size:10.5px; font-weight:700; color:var(--muted); padding-bottom:6px;}
+  .day{
+    position:relative; aspect-ratio:1; border-radius:10px; display:flex; align-items:center; justify-content:center;
+    font-size:12.5px; font-weight:700; font-variant-numeric:tabular-nums;
+  }
+  .day.a{background:var(--teal-soft); color:var(--teal);}
+  .day.b{background:var(--amber-soft); color:var(--amber);}
+  .day.pad{visibility:hidden;}
+  .day.today{box-shadow:0 0 0 2px var(--ink) inset;}
+  .day .swap-flag{
+    position:absolute; top:-4px; right:-4px; width:14px; height:14px; border-radius:50%;
+    background:var(--danger); border:2px solid var(--surface-2);
+  }
+
+  .handoff-list{display:flex; flex-direction:column; gap:10px;}
+  .handoff{
+    display:flex; align-items:center; gap:12px; background:var(--surface-2); border:1px solid var(--line);
+    border-radius:14px; padding:12px 14px;
+  }
+  .handoff .date-chip{
+    width:44px; text-align:center; flex-shrink:0;
+  }
+  .handoff .date-chip .num{font-family:"Fraunces", serif; font-size:19px; font-weight:600; display:block; line-height:1;}
+  .handoff .date-chip .mon{font-size:10px; color:var(--muted); font-weight:700; text-transform:uppercase;}
+  .handoff .info{flex:1; min-width:0;}
+  .handoff .info .who{font-size:13px; font-weight:700;}
+  .handoff .info .meta{font-size:11.5px; color:var(--muted);}
+  .pill-btn{
+    border:1px solid var(--line); background:var(--surface); color:var(--ink); font-family:inherit;
+    font-size:11.5px; font-weight:700; padding:7px 11px; border-radius:999px; cursor:pointer; flex-shrink:0;
+    white-space:nowrap;
+  }
+  .pill-btn.sent{color:var(--muted); border-color:var(--line); background:var(--surface-2); cursor:default;}
+  .pill-btn:active{transform:scale(.96);}
+
+  /* --- Journal --- */
+  .day-group{margin-bottom:18px;}
+  .day-group .day-label{font-size:12px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:10px;}
+  .entry{display:flex; gap:11px; padding:11px 0; border-top:1px solid var(--line);}
+  .day-group .entry:first-of-type{border-top:none;}
+  .entry .icon{
+    width:34px; height:34px; border-radius:10px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+  }
+  .entry .icon svg{width:17px; height:17px;}
+  .icon.repas{background:var(--amber-soft); color:var(--amber);}
+  .icon.sommeil{background:var(--teal-soft); color:var(--teal);}
+  .icon.sante{background:#F3DCE0; color:#B2456B;}
+  .icon.humeur{background:#E4E2F5; color:#5F55B0;}
+  .icon.evenement{background:var(--surface-2); color:var(--ink);}
+  .entry .body{flex:1; min-width:0;}
+  .entry .row1{display:flex; justify-content:space-between; gap:8px; align-items:baseline;}
+  .entry .type{font-size:13.5px; font-weight:700;}
+  .entry .time{font-size:11px; color:var(--muted); flex-shrink:0; font-variant-numeric:tabular-nums;}
+  .entry .text{font-size:13px; color:var(--muted); margin-top:2px; line-height:1.4;}
+  .author-chip{
+    display:inline-flex; align-items:center; gap:5px; font-size:10.5px; font-weight:800; margin-top:6px;
+    padding:2px 8px; border-radius:999px;
+  }
+  .author-chip.a{background:var(--teal-soft); color:var(--teal);}
+  .author-chip.b{background:var(--amber-soft); color:var(--amber);}
+  .author-chip .dot{width:6px;height:6px;}
+
+  .fab{
+    position:absolute; right:20px; bottom:calc(84px + env(safe-area-inset-bottom,0px));
+    width:50px; height:50px; border-radius:50%; border:none; cursor:pointer;
+    background:var(--ink); color:var(--bg); display:flex; align-items:center; justify-content:center;
+    box-shadow:0 10px 20px -8px rgba(0,0,0,.4); font-size:26px; line-height:1;
+  }
+  .fab:active{transform:scale(.94);}
+
+  /* --- Messages --- */
+  .templates{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px;}
+  .templates::-webkit-scrollbar{height:0;}
+  .tmpl-btn{
+    flex-shrink:0; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); font-family:inherit;
+    font-size:12px; font-weight:700; padding:8px 13px; border-radius:999px; cursor:pointer;
+  }
+  .tmpl-btn.sel{background:var(--ink); color:var(--bg); border-color:var(--ink);}
+  .empty-state{text-align:center; color:var(--muted); font-size:13px; padding:36px 10px; font-weight:600;}
+
+  /* --- Santé --- */
+  .info-card{background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius); padding:15px 16px; margin-bottom:14px;}
+  .info-card h3{font-size:13.5px; font-weight:700; margin-bottom:10px; font-family:"Plus Jakarta Sans", sans-serif;}
+  .kv-row{display:flex; justify-content:space-between; gap:10px; font-size:13px; padding:6px 0; border-top:1px solid var(--line);}
+  .kv-row:first-of-type{border-top:none;}
+  .kv-row .k{color:var(--muted); font-weight:600;}
+  .kv-row .v{font-weight:700; text-align:right;}
+  .tag-row{display:flex; gap:6px; flex-wrap:wrap;}
+  .tag{background:var(--surface); border:1px solid var(--line); border-radius:999px; padding:5px 10px; font-size:12px; font-weight:700;}
+  .tag.warn{background:#F3DCE0; color:#B2456B; border-color:transparent;}
+  .vax-item, .rx-item{display:flex; align-items:center; gap:11px; padding:10px 0; border-top:1px solid var(--line);}
+  .info-card .vax-item:first-of-type, .info-card .rx-item:first-of-type{border-top:none;}
+  .vax-item .body, .rx-item .body{flex:1; min-width:0;}
+  .vax-item .name, .rx-item .name{font-size:13px; font-weight:700;}
+  .vax-item .sub, .rx-item .sub{font-size:11.5px; color:var(--muted); margin-top:1px;}
+  .status-pill{font-size:10.5px; font-weight:800; padding:4px 9px; border-radius:999px; flex-shrink:0; border:none; font-family:inherit; cursor:default;}
+  .status-pill.done{background:var(--teal-soft); color:var(--teal);}
+  .status-pill.pending{background:var(--amber-soft); color:var(--amber); cursor:pointer;}
+  .growth-row{display:flex; gap:10px;}
+  .growth-tile{flex:1; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px; text-align:center;}
+  .growth-tile .num{font-family:"Fraunces", serif; font-size:20px; font-weight:600; display:block; font-variant-numeric:tabular-nums;}
+  .growth-tile .lbl{font-size:10.5px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.04em;}
+
+  /* --- Mediation banner --- */
+  .mediation-banner{
+    display:none; align-items:flex-start; gap:10px; background:var(--amber-soft); border:1px solid var(--amber);
+    border-radius:12px; padding:11px 12px; margin:0 16px 10px; font-size:12.5px; color:var(--ink);
+  }
+  .mediation-banner.show{display:flex;}
+  .mediation-banner .icon{flex-shrink:0; width:18px; height:18px; color:var(--amber); margin-top:1px;}
+  .mediation-banner .txt{flex:1; line-height:1.4;}
+  .mediation-banner .txt strong{display:block; font-weight:800; margin-bottom:2px;}
+  .mediation-actions{display:flex; gap:8px; margin-top:8px;}
+  .mediation-actions button{
+    font:inherit; font-size:11.5px; font-weight:700; border-radius:999px; padding:6px 11px; cursor:pointer; border:1px solid var(--line);
+  }
+  .mediation-actions .rewrite-btn{background:var(--ink); color:var(--bg); border-color:var(--ink);}
+  .mediation-actions .dismiss-btn{background:var(--surface);}
+  .msg-list{display:flex; flex-direction:column; gap:10px;}
+  .msg-day{text-align:center; font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin:10px 0 4px;}
+  .bubble-row{display:flex;}
+  .bubble-row.a{justify-content:flex-start;}
+  .bubble-row.b{justify-content:flex-end;}
+  .bubble{max-width:78%; padding:10px 13px; border-radius:16px; font-size:13.5px; line-height:1.42;}
+  .bubble-row.a .bubble{background:var(--teal-soft); color:var(--ink); border-bottom-left-radius:4px;}
+  .bubble-row.b .bubble{background:var(--amber); color:#fff; border-bottom-right-radius:4px;}
+  .bubble .meta{display:block; font-size:10px; margin-top:4px; opacity:.65; font-weight:700;}
+
+  .composer{
+    display:flex; gap:8px; padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));
+    border-top:1px solid var(--line); background:var(--surface); flex-shrink:0;
+  }
+  .composer input{
+    flex:1; border:1px solid var(--line); background:var(--surface-2); border-radius:999px; padding:10px 15px;
+    font:inherit; font-size:13.5px; color:var(--ink); min-width:0;
+  }
+  .composer input:focus{outline:2px solid var(--teal); outline-offset:1px;}
+  .send-btn{
+    width:38px; height:38px; border-radius:50%; border:none; background:var(--ink); color:var(--bg);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;
+  }
+  .send-btn:active{transform:scale(.92);}
+  .send-btn:disabled{opacity:.35; cursor:default;}
+  .send-btn:disabled:active{transform:none;}
+
+  /* --- Tab bar --- */
+  nav.tabbar{
+    display:flex; border-top:1px solid var(--line); background:var(--surface); flex-shrink:0;
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  nav.tabbar button{
+    flex:1; border:none; background:none; padding:10px 0 8px; display:flex; flex-direction:column;
+    align-items:center; gap:4px; cursor:pointer; color:var(--muted); font-family:inherit;
+  }
+  nav.tabbar button svg{width:21px; height:21px;}
+  nav.tabbar button span{font-size:10.5px; font-weight:700;}
+  nav.tabbar button.active{color:var(--ink);}
+
+  .sheet-backdrop{
+    position:absolute; inset:0; background:rgba(10,15,16,.4); display:flex; align-items:flex-end;
+    opacity:0; pointer-events:none; transition:opacity .2s; z-index:5;
+  }
+  .sheet-backdrop.open{opacity:1; pointer-events:auto;}
+  .sheet{
+    background:var(--surface); border-radius:22px 22px 0 0; width:100%; padding:18px 20px calc(20px + env(safe-area-inset-bottom,0px));
+    transform:translateY(100%); transition:transform .22s ease; display:flex; flex-direction:column; gap:12px;
+  }
+  .sheet-backdrop.open .sheet{transform:translateY(0);}
+  .sheet h3{font-size:16px; font-weight:600;}
+  .type-row{display:flex; gap:7px; flex-wrap:wrap;}
+  .type-choice{
+    border:1px solid var(--line); background:var(--surface-2); border-radius:999px; padding:7px 12px;
+    font:inherit; font-size:12px; font-weight:700; color:var(--ink); cursor:pointer;
+  }
+  .type-choice.sel{background:var(--ink); color:var(--bg); border-color:var(--ink);}
+  .sheet textarea{
+    border:1px solid var(--line); border-radius:12px; padding:10px 12px; font:inherit; font-size:13.5px;
+    resize:none; height:64px; background:var(--surface-2); color:var(--ink);
+  }
+  .sheet .actions{display:flex; gap:10px;}
+  .btn-primary, .btn-ghost{
+    flex:1; border-radius:12px; padding:11px; font:inherit; font-size:13.5px; font-weight:700; cursor:pointer; border:1px solid var(--line);
+  }
+  .btn-primary{background:var(--ink); color:var(--bg); border-color:var(--ink);}
+  .btn-ghost{background:var(--surface);}
+
+  .toast{
+    position:absolute; top:calc(14px + env(safe-area-inset-top,0px)); left:50%; transform:translate(-50%,-140%);
+    background:var(--ink); color:var(--bg); font-size:12.5px; font-weight:700; padding:10px 16px; border-radius:999px;
+    transition:transform .25s ease; z-index:10; white-space:nowrap;
+  }
+  .toast.show{transform:translate(-50%,0);}
+</style>
+
+<div class="phone">
+  <div class="screen">
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark"></div>
+        <h1>Duo</h1>
+      </div>
+      <div class="switcher" id="switcher">
+        <button class="a" data-parent="a">Léa</button>
+        <button class="b" data-parent="b">Karim</button>
+      </div>
+    </header>
+
+    <main id="view-cal">
+      <div class="section-head"><h2>Garde de Nino</h2></div>
+      <div class="week-banner" id="week-banner"></div>
+      <div class="cal-card">
+        <div class="cal-title">
+          <strong>Septembre 2026</strong>
+          <div class="legend">
+            <span><span class="dot a"></span>Léa</span>
+            <span><span class="dot b"></span>Karim</span>
+            <span><span class="dot swap"></span>Échange demandé</span>
+          </div>
+        </div>
+        <div class="weekdays"><div>L</div><div>M</div><div>M</div><div>J</div><div>V</div><div>S</div><div>D</div></div>
+        <div class="grid" id="cal-grid"></div>
+      </div>
+
+      <div class="section-head"><h2>Prochains échanges</h2></div>
+      <div class="handoff-list" id="handoff-list"></div>
+    </main>
+
+    <main id="view-journal" hidden>
+      <div class="section-head"><h2>Journal de Nino</h2><span class="link-btn" id="journal-count" style="color:var(--muted); font-weight:700; cursor:default;"></span></div>
+      <div class="templates" id="journal-filters">
+        <button class="tmpl-btn sel" data-type="all">Tout</button>
+        <button class="tmpl-btn" data-type="repas">Repas</button>
+        <button class="tmpl-btn" data-type="sommeil">Sommeil</button>
+        <button class="tmpl-btn" data-type="sante">Santé</button>
+        <button class="tmpl-btn" data-type="humeur">Humeur</button>
+        <button class="tmpl-btn" data-type="evenement">Événement</button>
+      </div>
+      <div id="journal-list"></div>
+      <button class="fab" id="fab-journal" aria-label="Ajouter une entrée">+</button>
+    </main>
+
+    <main id="view-sante" hidden>
+      <div class="section-head"><h2>Santé de Nino</h2></div>
+
+      <div class="info-card">
+        <h3>Infos essentielles</h3>
+        <div class="kv-row"><span class="k">Groupe sanguin</span><span class="v" id="health-blood"></span></div>
+        <div class="kv-row" style="border-top:none; padding-top:10px;">
+          <span class="k">Allergies</span>
+          <span class="tag-row" id="health-allergies" style="justify-content:flex-end;"></span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <h3>Croissance — dernière mesure</h3>
+        <div class="growth-row" id="health-growth"></div>
+      </div>
+
+      <div class="info-card">
+        <h3>Vaccinations</h3>
+        <div id="health-vax"></div>
+      </div>
+
+      <div class="info-card">
+        <h3>Traitements en cours</h3>
+        <div id="health-rx"></div>
+      </div>
+    </main>
+
+    <main id="view-msg" hidden style="display:flex; flex-direction:column; padding-bottom:0;">
+      <div class="section-head" style="margin-top:0;"><h2>Échanges</h2></div>
+      <div class="templates">
+        <button class="tmpl-btn" data-tmpl="Info santé — ">Info santé</button>
+        <button class="tmpl-btn" data-tmpl="Logistique — ">Logistique</button>
+        <button class="tmpl-btn" data-tmpl="Demande — ">Demande</button>
+      </div>
+      <div class="msg-list" id="msg-list" style="flex:1;"></div>
+    </main>
+    <div class="mediation-banner" id="mediation-banner">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div class="txt">
+        <strong>Ce message pourrait envenimer l'échange</strong>
+        Une reformulation plus factuelle serait peut-être mieux reçue.
+        <div class="mediation-actions">
+          <button class="rewrite-btn" id="mediation-rewrite">Voir la reformulation</button>
+          <button class="dismiss-btn" id="mediation-dismiss">Envoyer tel quel</button>
+        </div>
+      </div>
+    </div>
+    <div class="composer" id="composer" hidden>
+      <input id="msg-input" placeholder="Écrire un message…" maxlength="240">
+      <button class="send-btn" id="send-btn" aria-label="Envoyer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+
+    <nav class="tabbar">
+      <button data-tab="cal" class="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Calendrier</span>
+      </button>
+      <button data-tab="journal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <span>Journal</span>
+      </button>
+      <button data-tab="sante">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <span>Santé</span>
+      </button>
+      <button data-tab="msg">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>Échanges</span>
+      </button>
+    </nav>
+
+    <div class="sheet-backdrop" id="sheet-backdrop">
+      <div class="sheet">
+        <h3>Nouvelle entrée</h3>
+        <div class="type-row" id="type-row">
+          <button class="type-choice sel" data-type="repas">Repas</button>
+          <button class="type-choice" data-type="sommeil">Sommeil</button>
+          <button class="type-choice" data-type="sante">Santé</button>
+          <button class="type-choice" data-type="humeur">Humeur</button>
+          <button class="type-choice" data-type="evenement">Événement</button>
+        </div>
+        <textarea id="entry-text" placeholder="Ex. Sieste de 14h à 15h30, très facile à endormir."></textarea>
+        <div class="actions">
+          <button class="btn-ghost" id="sheet-cancel">Annuler</button>
+          <button class="btn-primary" id="sheet-save">Ajouter</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var PARENTS = { a:{name:"Léa"}, b:{name:"Karim"} };
+
+  var ICONS = {
+    repas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6a2 2 0 0 0 2 2h3z"/><path d="M18 22v-8"/></svg>',
+    sommeil: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+    sante: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+    humeur: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9" y2="9.5"/><line x1="15" y1="9" x2="15" y2="9.5"/></svg>',
+    evenement: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8-5.1-4.7 6.9-.8z"/></svg>'
+  };
+  var TYPE_LABEL = { repas:"Repas", sommeil:"Sommeil", sante:"Santé", humeur:"Humeur", evenement:"Événement" };
+
+  var MOCK_JOURNAL = [
+    { date:"18 sept.", time:"12:30", type:"repas", author:"a", text:"A bien mangé les pâtes, a refusé les courgettes comme d'habitude." },
+    { date:"18 sept.", time:"13:15", type:"sommeil", author:"a", text:"Sieste de 45 min, s'est réveillé de bonne humeur." },
+    { date:"18 sept.", time:"08:40", type:"humeur", author:"a", text:"Petit coup de fatigue au réveil, câlin puis tout va bien." },
+    { date:"17 sept.", time:"19:00", type:"sante", author:"b", text:"Petite fièvre 37.9°C le soir, doliprane donné, à surveiller demain." },
+    { date:"17 sept.", time:"16:00", type:"evenement", author:"b", text:"A dit sa première phrase de 4 mots : « papa donne moi ça » !" },
+    { date:"16 sept.", time:"20:10", type:"sommeil", author:"b", text:"Endormi seul dans son lit sans pleurs, une première." }
+  ];
+
+  var MOCK_HEALTH = {
+    bloodType: "O+",
+    allergies: [{ label:"Arachides", warn:true }, { label:"Aucune allergie médicamenteuse connue", warn:false }],
+    growth: { date:"1 sept. 2026", weight:"14.8 kg", height:"97 cm" },
+    vaccinations: [
+      { name:"Hexavalent (DTP-Coqueluche-Hib-HepB) — rappel", date:"12 mars 2026", done:true },
+      { name:"Méningocoque C", date:"12 mars 2026", done:true },
+      { name:"ROR — 2ᵉ dose", date:"15 nov. 2026", done:false }
+    ],
+    prescriptions: [
+      { name:"Doliprane sirop 100mg/5ml", dosage:"5 ml si fièvre > 38.5°C, max 4x/jour", since:"depuis le 17 sept. 2026", by:"Dr Amélie Roussel" }
+    ]
+  };
+
+  var MOCK_MESSAGES = [
+    { day:"Hier", author:"b", time:"18:42", text:"Info santé — petite fièvre ce soir, je surveille et te dis demain matin." },
+    { day:"Hier", author:"a", time:"19:05", text:"Merci de me tenir au courant, j'ai mis le doliprane dans son sac au cas où." },
+    { day:"Aujourd'hui", author:"b", time:"08:12", text:"Plus de fièvre ce matin, il a l'air en forme !" },
+    { day:"Aujourd'hui", author:"a", time:"09:30", text:"Logistique — je le récupère à 18h30 vendredi au lieu de 18h, RDV pédiatre." }
+  ];
+
+  var MONTH_START_WEEKDAY = 1; // 1 sept 2026 is a Tuesday -> index1 in L,M,M,J,V,S,D (0=Mon)
+  var DAYS_IN_MONTH = 30;
+  var TODAY = 18;
+
+  function assignedParent(day){
+    // alternating weekly custody, switch handled on the Sunday->Monday boundary
+    var week = Math.floor((day - 1 + MONTH_START_WEEKDAY) / 7);
+    return week % 2 === 0 ? "a" : "b";
+  }
+  function nextSwitchDays(){
+    var out = [];
+    for (var d = TODAY; d <= DAYS_IN_MONTH; d++){
+      if (d > TODAY && assignedParent(d) !== assignedParent(d-1)) out.push(d);
+      if (out.length >= 2) break;
+    }
+    return out;
+  }
+
+  var store = { swaps:{}, journal:null, messages:null, parent:"a" };
+  function loadStore(){
+    try{
+      var raw = localStorage.getItem("duo-coparent-mvp");
+      if (raw){ var parsed = JSON.parse(raw); Object.assign(store, parsed); }
+    }catch(e){}
+  }
+  function saveStore(){
+    try{ localStorage.setItem("duo-coparent-mvp", JSON.stringify(store)); }catch(e){}
+  }
+  loadStore();
+  if (!store.journal) store.journal = MOCK_JOURNAL.slice();
+  if (!store.messages) store.messages = MOCK_MESSAGES.slice();
+  if (!store.health) store.health = JSON.parse(JSON.stringify(MOCK_HEALTH));
+
+  function el(html){ var t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstChild; }
+  function showToast(msg){
+    var t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(t._h);
+    t._h = setTimeout(function(){ t.classList.remove("show"); }, 1800);
+  }
+
+  /* ---- Calendar ---- */
+  function renderCalendar(){
+    var todayParent = assignedParent(TODAY);
+    var banner = document.getElementById("week-banner");
+    banner.innerHTML = '<span class="dot ' + todayParent + '"></span> Cette semaine, Nino est chez <strong>' + PARENTS[todayParent].name + '</strong>.';
+
+    var grid = document.getElementById("cal-grid");
+    grid.innerHTML = "";
+    for (var i = 0; i < MONTH_START_WEEKDAY; i++) grid.appendChild(el('<div class="day pad"></div>'));
+    for (var d = 1; d <= DAYS_IN_MONTH; d++){
+      var p = assignedParent(d);
+      var isToday = d === TODAY;
+      var node = el('<div class="day ' + p + (isToday ? " today" : "") + '">' + d + '</div>');
+      if (store.swaps[d]) node.appendChild(el('<span class="swap-flag" title="Échange demandé"></span>'));
+      grid.appendChild(node);
+    }
+
+    var list = document.getElementById("handoff-list");
+    list.innerHTML = "";
+    var months = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+    nextSwitchDays().forEach(function(d){
+      var to = assignedParent(d);
+      var from = to === "a" ? "b" : "a";
+      var sent = !!store.swaps[d];
+      var row = el(
+        '<div class="handoff">' +
+          '<div class="date-chip"><span class="num">' + d + '</span><span class="mon">' + months[8] + '</span></div>' +
+          '<div class="info"><div class="who">' + PARENTS[from].name + ' → ' + PARENTS[to].name + '</div>' +
+          '<div class="meta">Passage de garde prévu</div></div>' +
+          '<button class="pill-btn' + (sent ? " sent" : "") + '">' + (sent ? "Demande envoyée" : "Demander un échange") + '</button>' +
+        '</div>'
+      );
+      row.querySelector("button").addEventListener("click", function(){
+        if (store.swaps[d]) return;
+        store.swaps[d] = true;
+        saveStore();
+        renderCalendar();
+        showToast("Demande d'échange envoyée à " + PARENTS[to].name);
+      });
+      list.appendChild(row);
+    });
+  }
+
+  /* ---- Journal ---- */
+  var journalFilter = "all";
+  function renderJournal(){
+    var count = document.getElementById("journal-count");
+    var entries = journalFilter === "all" ? store.journal : store.journal.filter(function(e){ return e.type === journalFilter; });
+    count.textContent = entries.length + (entries.length === 1 ? " entrée" : " entrées");
+
+    var wrap = document.getElementById("journal-list");
+    wrap.innerHTML = "";
+    if (entries.length === 0){
+      wrap.appendChild(el('<div class="empty-state">Aucune entrée « ' + TYPE_LABEL[journalFilter] + ' » pour l\'instant.</div>'));
+      return;
+    }
+    var groups = {};
+    var order = [];
+    entries.forEach(function(e){
+      if (!groups[e.date]){ groups[e.date] = []; order.push(e.date); }
+      groups[e.date].push(e);
+    });
+    order.forEach(function(date){
+      var g = el('<div class="day-group"><div class="day-label">' + date + '</div></div>');
+      groups[date].forEach(function(e){
+        var author = PARENTS[e.author].name;
+        var row = el(
+          '<div class="entry">' +
+            '<div class="icon ' + e.type + '">' + ICONS[e.type] + '</div>' +
+            '<div class="body">' +
+              '<div class="row1"><span class="type">' + TYPE_LABEL[e.type] + '</span><span class="time">' + e.time + '</span></div>' +
+              '<div class="text">' + e.text + '</div>' +
+              '<span class="author-chip ' + e.author + '"><span class="dot"></span>' + author + '</span>' +
+            '</div>' +
+          '</div>'
+        );
+        g.appendChild(row);
+      });
+      wrap.appendChild(g);
+    });
+  }
+
+  /* ---- Santé ---- */
+  function renderHealth(){
+    var h = store.health;
+    document.getElementById("health-blood").textContent = h.bloodType;
+
+    var allergyWrap = document.getElementById("health-allergies");
+    allergyWrap.innerHTML = "";
+    h.allergies.forEach(function(a){
+      allergyWrap.appendChild(el('<span class="tag' + (a.warn ? " warn" : "") + '">' + a.label + '</span>'));
+    });
+
+    var growthWrap = document.getElementById("health-growth");
+    growthWrap.innerHTML =
+      '<div class="growth-tile"><span class="num">' + h.growth.weight + '</span><span class="lbl">Poids</span></div>' +
+      '<div class="growth-tile"><span class="num">' + h.growth.height + '</span><span class="lbl">Taille</span></div>' +
+      '<div class="growth-tile"><span class="num" style="font-size:14px;">' + h.growth.date + '</span><span class="lbl">Mesuré le</span></div>';
+
+    var vaxWrap = document.getElementById("health-vax");
+    vaxWrap.innerHTML = "";
+    h.vaccinations.forEach(function(v, i){
+      var row = el(
+        '<div class="vax-item">' +
+          '<div class="body"><div class="name">' + v.name + '</div><div class="sub">' + v.date + '</div></div>' +
+          (v.done
+            ? '<span class="status-pill done">Fait</span>'
+            : '<button class="status-pill pending">À venir</button>') +
+        '</div>'
+      );
+      if (!v.done){
+        row.querySelector(".status-pill").addEventListener("click", function(){
+          store.health.vaccinations[i].done = true;
+          saveStore();
+          renderHealth();
+          showToast("Vaccination marquée comme faite");
+        });
+      }
+      vaxWrap.appendChild(row);
+    });
+
+    var rxWrap = document.getElementById("health-rx");
+    rxWrap.innerHTML = "";
+    if (h.prescriptions.length === 0){
+      rxWrap.appendChild(el('<div class="empty-state" style="padding:12px 0;">Aucun traitement en cours.</div>'));
+    }
+    h.prescriptions.forEach(function(rx){
+      rxWrap.appendChild(el(
+        '<div class="rx-item">' +
+          '<div class="body"><div class="name">' + rx.name + '</div>' +
+          '<div class="sub">' + rx.dosage + ' · ' + rx.since + ' · prescrit par ' + rx.by + '</div></div>' +
+        '</div>'
+      ));
+    });
+  }
+
+  /* ---- Messages ---- */
+  function renderMessages(){
+    var wrap = document.getElementById("msg-list");
+    wrap.innerHTML = "";
+    var lastDay = null;
+    store.messages.forEach(function(m, i){
+      if (m.day !== lastDay){ wrap.appendChild(el('<div class="msg-day">' + m.day + '</div>')); lastDay = m.day; }
+      var status = "";
+      if (m.author === store.parent){
+        var hasReplyAfter = store.messages.slice(i + 1).some(function(later){ return later.author !== m.author; });
+        status = " · " + (hasReplyAfter ? "Vu" : "Envoyé");
+      }
+      var row = el(
+        '<div class="bubble-row ' + m.author + '">' +
+          '<div class="bubble">' + m.text + '<span class="meta">' + PARENTS[m.author].name + ' · ' + m.time + status + '</span></div>' +
+        '</div>'
+      );
+      wrap.appendChild(row);
+    });
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+
+  /* ---- Tabs ---- */
+  var views = {
+    cal: document.getElementById("view-cal"),
+    journal: document.getElementById("view-journal"),
+    sante: document.getElementById("view-sante"),
+    msg: document.getElementById("view-msg")
+  };
+  var tabButtons = document.querySelectorAll("nav.tabbar button");
+  var composer = document.getElementById("composer");
+  function setTab(tab){
+    Object.keys(views).forEach(function(k){ views[k].hidden = k !== tab; });
+    tabButtons.forEach(function(b){ b.classList.toggle("active", b.dataset.tab === tab); });
+    composer.hidden = tab !== "msg";
+  }
+  tabButtons.forEach(function(b){ b.addEventListener("click", function(){ setTab(b.dataset.tab); }); });
+
+  /* ---- Parent switcher ---- */
+  function renderSwitcher(){
+    document.querySelectorAll("#switcher button").forEach(function(b){
+      b.classList.toggle("active", b.dataset.parent === store.parent);
+    });
+  }
+  document.getElementById("switcher").addEventListener("click", function(e){
+    var b = e.target.closest("button");
+    if (!b) return;
+    store.parent = b.dataset.parent;
+    saveStore();
+    renderSwitcher();
+    renderMessages();
+  });
+
+  document.getElementById("journal-filters").addEventListener("click", function(e){
+    var b = e.target.closest("button");
+    if (!b) return;
+    journalFilter = b.dataset.type;
+    document.querySelectorAll("#journal-filters button").forEach(function(c){ c.classList.toggle("sel", c === b); });
+    renderJournal();
+  });
+
+  /* ---- New journal entry sheet ---- */
+  var backdrop = document.getElementById("sheet-backdrop");
+  var selectedType = "repas";
+  document.getElementById("fab-journal").addEventListener("click", function(){ backdrop.classList.add("open"); });
+  document.getElementById("sheet-cancel").addEventListener("click", closeSheet);
+  backdrop.addEventListener("click", function(e){ if (e.target === backdrop) closeSheet(); });
+  function closeSheet(){
+    backdrop.classList.remove("open");
+    document.getElementById("entry-text").value = "";
+  }
+  document.getElementById("type-row").addEventListener("click", function(e){
+    var b = e.target.closest(".type-choice");
+    if (!b) return;
+    selectedType = b.dataset.type;
+    document.querySelectorAll(".type-choice").forEach(function(c){ c.classList.toggle("sel", c === b); });
+  });
+  document.getElementById("sheet-save").addEventListener("click", function(){
+    var text = document.getElementById("entry-text").value.trim();
+    if (!text) return;
+    var now = new Date();
+    store.journal.unshift({
+      date:"18 sept.", time:now.getHours().toString().padStart(2,"0")+":"+now.getMinutes().toString().padStart(2,"0"),
+      type:selectedType, author:store.parent, text:text
+    });
+    saveStore();
+    renderJournal();
+    closeSheet();
+    showToast("Entrée ajoutée au journal");
+  });
+
+  /* ---- Mode médiation ---- */
+  var TENSE_WORDS = ["jamais", "toujours", "n'importe quoi", "ras le bol", "encore une fois", "comme d'habitude", "c'est nul", "n'importe"];
+  var SOFTENERS = {
+    "jamais": "rarement",
+    "toujours": "souvent",
+    "n'importe quoi": "pas adapté à mon avis",
+    "ras le bol": "besoin qu'on en reparle",
+    "encore une fois": "à nouveau",
+    "comme d'habitude": "cette fois-ci aussi",
+    "c'est nul": "ça ne me convient pas"
+  };
+  function isTense(text){
+    var t = text.toLowerCase();
+    if (/!{2,}/.test(text)) return true;
+    if (/\b[A-ZÀ-Ú]{4,}\b/.test(text.replace(/^\p{Lu}/u, ""))) return true;
+    return TENSE_WORDS.some(function(w){ return t.indexOf(w) !== -1; });
+  }
+  function mockNeutralRewrite(text){
+    var out = text.replace(/!{2,}/g, ".").replace(/\s+/g, " ").trim();
+    Object.keys(SOFTENERS).forEach(function(w){
+      out = out.replace(new RegExp(w, "gi"), SOFTENERS[w]);
+    });
+    out = out.replace(/\b[A-ZÀ-Ú]{4,}\b/g, function(m){ return m.charAt(0) + m.slice(1).toLowerCase(); });
+    return out.charAt(0).toUpperCase() + out.slice(1);
+  }
+
+  var mediationBanner = document.getElementById("mediation-banner");
+  document.getElementById("mediation-dismiss").addEventListener("click", function(){
+    mediationBanner.classList.remove("show");
+  });
+  document.getElementById("mediation-rewrite").addEventListener("click", function(){
+    input.value = mockNeutralRewrite(input.value);
+    mediationBanner.classList.remove("show");
+    updateSendState();
+    input.focus();
+  });
+
+  /* ---- Messages composer ---- */
+  var input = document.getElementById("msg-input");
+  document.querySelectorAll(".tmpl-btn").forEach(function(b){
+    b.addEventListener("click", function(){ input.value = b.dataset.tmpl; input.focus(); });
+  });
+  function sendMessage(){
+    var text = input.value.trim();
+    if (!text) return;
+    if (isTense(text)){
+      mediationBanner.classList.add("show");
+      return;
+    }
+    var now = new Date();
+    store.messages.push({ day:"Aujourd'hui", author:store.parent, time:now.getHours().toString().padStart(2,"0")+":"+now.getMinutes().toString().padStart(2,"0"), text:text });
+    saveStore();
+    input.value = "";
+    updateSendState();
+    renderMessages();
+  }
+  var sendBtn = document.getElementById("send-btn");
+  function updateSendState(){ sendBtn.disabled = input.value.trim().length === 0; }
+  document.getElementById("send-btn").addEventListener("click", sendMessage);
+  input.addEventListener("input", function(){ updateSendState(); mediationBanner.classList.remove("show"); });
+  input.addEventListener("keydown", function(e){ if (e.key === "Enter" && !sendBtn.disabled) sendMessage(); });
+  updateSendState();
+
+  renderCalendar();
+  renderJournal();
+  renderHealth();
+  renderMessages();
+  renderSwitcher();
+})();
+</script>
